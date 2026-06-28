@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Suno 行単位 SRT ブックマークレット</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f8;
+      --card: #fff;
+      --text: #111;
+      --muted: #555;
+      --accent: #111;
+      --accent-text: #fff;
+      --border: #ddd;
+      --code-bg: #f0f0f2;
+      --ok: #0a7a3e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --card: #1c1c1e;
+        --text: #f2f2f2;
+        --muted: #aaa;
+        --accent: #f2f2f2;
+        --accent-text: #111;
+        --border: #333;
+        --code-bg: #2a2a2c;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+      line-height: 1.65;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; }
+    p, li { color: var(--text); }
+    .lead { color: var(--muted); margin-top: 0; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+    }
+    .install-zone {
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+    a.bookmarklet {
+      display: inline-block;
+      padding: 0.85rem 1.25rem;
+      background: var(--accent);
+      color: var(--accent-text);
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: grab;
+      user-select: none;
+    }
+    a.bookmarklet:active { cursor: grabbing; }
+    .hint {
+      margin-top: 0.75rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    code {
+      background: var(--code-bg);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.92em;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      max-height: 220px;
+    }
+    ol, ul { padding-left: 1.25rem; }
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.45rem 0.85rem;
+      cursor: pointer;
+      font: inherit;
+    }
+    button:hover { opacity: 0.9; }
+    .status {
+      font-size: 0.9rem;
+      color: var(--ok);
+      min-height: 1.2em;
+    }
+    .warn {
+      border-left: 4px solid #c97a00;
+      padding-left: 0.85rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .repo-link { font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <h1>Suno 行単位 SRT ブックマークレット</h1>
+  <p class="lead">
+    Suno の <code>/song/</code> または <code>/edit/</code> ページから、
+    タイミング付き歌詞 API を使って SRT をダウンロードします。
+    <code>[Intro]</code> などの <code>[...]</code> タグ行は除去し、歌詞 1 行 = SRT 1 ブロックです。
+  </p>
+  <p class="repo-link"><a href="https://github.com/kuwa2005/suno-line-srt-bookmarklet">GitHub リポジトリ</a></p>
+
+  <div class="card install-zone">
+    <p><strong>このボタンをブックマークバーへドラッグ</strong></p>
+    <p><a id="bm" class="bookmarklet" href="#">Suno 行SRT 取得</a></p>
+    <p class="hint">ドラッグできない場合は、下の「手動登録」を使ってください。</p>
+  </div>
+
+  <h2>使い方</h2>
+  <ol>
+    <li>Chrome で Suno にログインする</li>
+    <li>対象曲の <code>/song/{id}</code> または <code>/edit/{id}</code> を開く</li>
+    <li>ブックマークバーの <strong>Suno 行SRT 取得</strong> をクリック</li>
+    <li><code>{曲ID}-lines.srt</code> がダウンロードされ、行数が alert で表示されます</li>
+  </ol>
+
+  <h2>手動登録する場合</h2>
+  <div class="card">
+    <ol>
+      <li>ブックマークマネージャで新規ブックマークを作成</li>
+      <li>名前: <code>Suno 行SRT 取得</code></li>
+      <li>URL: 下のコードを<strong>1 行全体</strong>コピーして貼り付け（改行なし）</li>
+    </ol>
+    <pre id="code"></pre>
+    <div class="row">
+      <button type="button" id="copy">URL をコピー</button>
+      <span class="status" id="copy-status" aria-live="polite"></span>
+    </div>
+    <p class="warn">
+      URL を編集画面に貼ると、ブラウザが一部を percent-encoding して
+      <code>SyntaxError: Unexpected end of input</code> になることがあります。
+      可能なら<strong>このページからドラッグ</strong>するか、貼り付け後に URL が
+      <code>return%20alert</code> のように変化していないか確認してください。
+    </p>
+  </div>
+
+  <h2>うまくいかないとき</h2>
+  <ul>
+    <li><strong>song/edit ページで実行してください</strong> → 曲ページ以外では動きません</li>
+    <li><strong>ログインが必要です</strong> → Suno にログインしてから再実行</li>
+    <li><strong>APIエラー</strong> → ページを再読み込みしてから再実行</li>
+    <li>古いブックマークが残っている → 削除して、このページから入れ直す</li>
+  </ul>
+
+  <script>
+    const bookmarklet =
+      "javascript:void((async function(){try{var m=location.pathname.match(/\\/(?:song|edit)\\/([0-9a-f-]{36})/i);var id=m&&m[1];if(!id)return alert('song/edit ページで実行してください\\n現在: '+location.pathname);var parts=document.cookie.split('; ');var t=null;for(var i=0;i<parts.length;i++){if(parts[i].indexOf('__session=')===0){t=parts[i].split('=')[1];break;}}if(!t)return alert('ログインが必要です。\\nSuno にログインしてから再実行してください。');var r=await fetch('https://studio-api.prod.suno.com/api/gen/'+id+'/aligned_lyrics/v2/',{headers:{Authorization:'Bearer '+t}});if(!r.ok)return alert('APIエラー: '+r.status+'\\nページを再読み込みして再試行してください。');var d=await r.json();var clean=function(s){return String(s||'').replace(/\\[[^\\]]*\\]/g,'').replace(/\\s+/g,' ').trim();};var raw=d.aligned_lyrics||[];var lines=[];for(var j=0;j<raw.length;j++){var txt=clean(raw[j].text);if(txt)lines.push({text:txt,start:raw[j].start_s,end:raw[j].end_s});}if(!lines.length)return alert('歌詞行がありません（タグ除去後0行）');var fmt=function(s){var h=Math.floor(s/3600),rem=s-h*3600,mi=Math.floor(rem/60),sec=Math.floor(rem-mi*60),ms=Math.floor((s-Math.floor(s))*1000);return String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0')+':'+String(sec).padStart(2,'0')+','+String(ms).padStart(3,'0');};var n=0,srt=lines.map(function(l){n++;var a=l.start!=null?l.start:0,b=l.end!=null?l.end:a+2;if(b<=a)b=a+0.5;return n+'\\n'+fmt(a)+' --> '+fmt(b)+'\\n'+l.text+'\\n';}).join('\\n');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([srt],{type:'text/plain;charset=utf-8'}));a.download=id+'-lines.srt';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(a.href);},100);alert('SRTをダウンロードしました ('+lines.length+'行)');}catch(e){alert('エラー: '+(e&&e.message?e.message:String(e)));}})());";
+
+    document.getElementById("bm").href = bookmarklet;
+    document.getElementById("code").textContent = bookmarklet;
+
+    document.getElementById("copy").addEventListener("click", async function () {
+      const status = document.getElementById("copy-status");
+      try {
+        await navigator.clipboard.writeText(bookmarklet);
+        status.textContent = "コピーしました";
+      } catch (e) {
+        const range = document.createRange();
+        range.selectNodeContents(document.getElementById("code"));
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        status.textContent = "選択しました。Ctrl+C でコピーしてください";
+      }
+    });
+  </script>
+</body>
+</html>
